@@ -1,150 +1,323 @@
- /******************************************************************************
- *
- * Module: UART
- *
- * File Name: uart.c
- *
- * Description: Source file for the UART AVR driver
- *
- * Author: Mohamed Tarek
- *
- *******************************************************************************/
+ 
+ #include "UART.h"
+ #define BAUDRATE 9600
+ #define F_CPU 16000000UL
 
-#include "uart.h"
-#include "avr/io.h" /* To use the UART Registers */
-#include "common_macros.h" /* To use the macros like SET_BIT */
+ /*******************************************UART0**************************************************************/
+ void UART0_init(void)
+ {
+	 UCSR0A = (1<<U2X0);
+	 /*baud ratio*/
+	 uint16_t ubrr = (F_CPU / (16 * BAUDRATE)) - 1;
+	 UBRR0H = (uint8_t)(ubrr >> 8);
+	 UBRR0L = (uint8_t)ubrr; //9600 clock MHz
+	 /*  8 bit data asynchronous no parity  2 stop bit*/
+	 SET_BIT(UCSR0C,USBS0);         //set 0 THIS LINE FOR 1 STOP BIT (clear bit)
+	 UCSR0C |= (1 << UCSZ01) | (1 << UCSZ00);          //sets size (number of data bits in the frame)
+	 //SET_BIT(UCS0C,UPM0);        //sets up parity mode
+	 /*Enable*/
+	 SET_BIT(UCSR0B,RXEN0);
+	 SET_BIT(UCSR0B,TXEN0);
+ }
 
-#define F_CPU 8000000UL
+ 
+ void UART0_Send(uint8 data)
+ {
+	 while(BIT_IS_CLEAR(UCSR0A,UDRE0));
+	 UDR0=data;
+ }
+ 
+ uint8 UART0_ReceiveData(void)
+ {
+	 while(BIT_IS_CLEAR(UCSR0A,RXC0));
+	 return UDR0;
+ }
 
-/*******************************************************************************
- *                      Functions Definitions                                  *
- *******************************************************************************/
+ void UART0_sendString(const uint8 *Str)
+ {
+	 uint8 i=0;
+	 while(Str[i] != '\0')
+	 {
+		 UART0_Send(Str[i]);
+		 i++;
+	 }
+ }
+ 
+ void UART0_receiveString(uint8 *Str)
+ {
+	 uint8 i=0;
+	 
+	 Str[i]=UART0_ReceiveData();
+	 
+	 while(Str[i] != '/0')
+	 {
+		 i++;
+		 Str[i]=UART0_ReceiveData();
+	 }
+	 Str[i]='\0';
+ }
 
-/*
- * Description :
- * Functional responsible for Initialize the UART device by:
- * 1. Setup the Frame format like number of data bits, parity bit type and number of stop bits.
- * 2. Enable the UART.
- * 3. Setup the UART baud rate.
- */
-void UART0_init(uint32 baud_rate)
-{
-	uint16 ubrr_value = 0;
 
-	/* U2X = 1 for double transmission speed */
-	UCSR0A = (1<<U2X0);
 
-	/************************** UCSRB Description **************************
-	 * RXCIE = 0 Disable USART RX Complete Interrupt Enable
-	 * TXCIE = 0 Disable USART Tx Complete Interrupt Enable
-	 * UDRIE = 0 Disable USART Data Register Empty Interrupt Enable
-	 * RXEN  = 1 Receiver Enable
-	 * RXEN  = 1 Transmitter Enable
-	 * UCSZ2 = 0 For 8-bit data mode
-	 * RXB8 & TXB8 not used for 8-bit data mode
-	 ***********************************************************************/ 
-	UCSR0B = (1<<RXEN0) | (1<<TXEN0);
-	
-	/************************** UCSRC Description **************************
-	 * URSEL   = 1 The URSEL must be one when writing the UCSRC
-	 * UMSEL   = 0 Asynchronous Operation
-	 * UPM1:0  = 00 Disable parity bit
-	 * USBS    = 0 One stop bit
-	 * UCSZ01:00 = 11 For 8-bit data mode
-	 * UCPOL   = 0 Used with the Synchronous operation only
-	 ***********************************************************************/ 	
-	UCSR0C =  (1<<UCSZ00) | (1<<UCSZ01); 
-	
-	/* Calculate the UBRR register value */
-	ubrr_value = (uint16)(((F_CPU / (baud_rate * 8UL))) - 1);
 
-	/* First 8 bits from the BAUD_PRESCALE inside UBRRL and last 4 bits in UBRRH*/
-	UBRR0H = ubrr_value>>8;
-	UBRR0L = ubrr_value;
-}
+ uint8 UART0_ReceivePerodic(uint8*pdata)
+ {
+	 if(READ_BIT(UCSR0A,RXC0))
+	 {
+		 *pdata=UDR0;
+		 return 1;
+	 }
+	 return 0;
+ }
+ 
 
-/*
- * Description :
- * Functional responsible for send byte to another UART device.
- */
-void UART0_sendByte(const uint8 data)
-{
-	/*
-	 * UDRE flag is set when the Tx buffer (UDR) is empty and ready for
-	 * transmitting a new byte so wait until this flag is set to one
-	 */
-	while(BIT_IS_CLEAR(UCSR0A,RXC0)){}
+ void UART0_SendNoBlock(uint8 data)
+ {
+	 UDR0=data;
+ }
 
-	/*
-	 * Put the required data in the UDR register and it also clear the UDRE flag as
-	 * the UDR register is not empty now
-	 */
-	UDR0 = data;
+ uint8 UART0_ReceiveNoBlock(void)
+ {
+	 return UDR0;
+ }
 
-	/************************* Another Method *************************
-	UDR = data;
-	while(BIT_IS_CLEAR(UCSRA,TXC)){} // Wait until the transmission is complete TXC = 1
-	SET_BIT(UCSRA,TXC); // Clear the TXC flag
-	*******************************************************************/
-}
 
-/*
- * Description :
- * Functional responsible for receive byte from another UART device.
- */
-uint8 UART0_recieveByte(void)
-{
-	/* RXC flag is set when the UART receive data so wait until this flag is set to one */
-	while(BIT_IS_CLEAR(UCSR0A,RXC0)){}
+ void UART0_RX_InterruptEnable(void)
+ {
+	 SET_BIT(UCSR0B,RXCIE0);
+ }
 
-	/*
-	 * Read the received data from the Rx buffer (UDR)
-	 * The RXC flag will be cleared after read the data
-	 */
-    return UDR0;		
-}
+ void UART0_RX_InterruptDisable(void)
+ {
+	 CLEAR_BIT(UCSR0B,RXCIE0);
+ }
 
-/*
- * Description :
- * Send the required string through UART to the other UART device.
- */
-void UART0_sendString(const uint8 *Str)
-{
-	uint8 i = 0;
+ void UART0_TX_InterruptEnable(void)
+ {
+	 SET_BIT(UCSR0B,TXCIE0);
+ }
 
-	/* Send the whole string */
-	while(Str[i] != '\0')
-	{
-		UART0_sendByte(Str[i]);
-		i++;
-	}
-	/************************* Another Method *************************
-	while(*Str != '\0')
-	{
-		UART_sendByte(*Str);
-		Str++;
-	}		
-	*******************************************************************/
-}
+ void UART0_TX_InterruptDisable(void)
+ {
+	 CLEAR_BIT(UCSR0B,TXCIE0);
+ }
+ //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ 
+ /*******************************************UART1**************************************************************/
+ void UART1_init(void)
+ {
+	 /*baud ratio*/
+	 uint16_t ubrr = (F_CPU / (16 * BAUDRATE)) - 1;
+	 UBRR1H = (uint8_t)(ubrr >> 8);
+	 UBRR1L = (uint8_t)ubrr; //9600 clock MHz
+	 /*  8 bit data asynchronous no parity  2 stop bit*/
+	 SET_BIT(UCSR1C,USBS1);         //set 0 THIS LINE FOR 1 STOP BIT (clear bit)
+	 UCSR1C |= (1 << UCSZ11) | (1 << UCSZ10);          //sets size (number of data bits in the frame)
+	 //SET_BIT(UCS0C,UPM0);        //sets up parity mode
+	 /*Enable*/
+	 SET_BIT(UCSR1B,RXEN1);
+	 SET_BIT(UCSR1B,TXEN1);
+ }
 
-/*
- * Description :
- * Receive the required string until the '#' symbol through UART from the other UART device.
- */
-void UART0_receiveString(uint8 *Str)
-{
-	uint8 i = 0;
+ 
+ void UART1_Send(uint8 data)
+ {
+	 while(!READ_BIT(UCSR1A,UDRE1));
+	 UDR1=data;
+ }
+ 
+ uint8 UART1_ReceiveData(void)
+ {
+	 while(!READ_BIT(UCSR1A,RXC1));
+	 return UDR1;
+ }
 
-	/* Receive the first byte */
-	Str[i] = UART0_recieveByte();
 
-	/* Receive the whole string until the '#' */
-	while(Str[i] != '#')
-	{
-		i++;
-		Str[i] = UART0_recieveByte();
-	}
+ uint8 UART1_ReceivePerodic(uint8*pdata)
+ {
+	 if(READ_BIT(UCSR1A,RXC1))
+	 {
+		 *pdata=UDR1;
+		 return 1;
+	 }
+	 return 0;
+ }
+ 
 
-	/* After receiving the whole string plus the '#', replace the '#' with '\0' */
-	Str[i] = '\0';
-}
+ void UART1_SendNoBlock(uint8 data)
+ {
+	 UDR1=data;
+ }
+
+ uint8 UART1_ReceiveNoBlock(void)
+ {
+	 return UDR1;
+ }
+
+
+ void UART1_RX_InterruptEnable(void)
+ {
+	 SET_BIT(UCSR1B,RXCIE1);
+ }
+
+ void UART1_RX_InterruptDisable(void)
+ {
+	 CLEAR_BIT(UCSR1B,RXCIE1);
+ }
+
+ void UART1_TX_InterruptEnable(void)
+ {
+	 SET_BIT(UCSR1B,TXCIE1);
+ }
+
+ void UART1_TX_InterruptDisable(void)
+ {
+	 CLEAR_BIT(UCSR1B,TXCIE1);
+ }
+ //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+ /*******************************************UART2**************************************************************/
+ void UART2_init(void)
+ {
+	 /*baud ratio*/
+	 uint16_t ubrr = (F_CPU / (16 * BAUDRATE)) - 1;
+	 UBRR2H = (uint8_t)(ubrr >> 8);
+	 UBRR2L = (uint8_t)ubrr; //9600 clock MHz
+	 /*  8 bit data asynchronous no parity  2 stop bit*/
+	 SET_BIT(UCSR2C,USBS2);         //set 0 THIS LINE FOR 1 STOP BIT (clear bit)
+	 UCSR2C |= (1 << UCSZ21) | (1 << UCSZ20);          //sets size (number of data bits in the frame)
+	 //SET_BIT(UCS0C,UPM0);        //sets up parity mode
+	 /*Enable*/
+	 SET_BIT(UCSR2B,RXEN2);
+	 SET_BIT(UCSR2B,TXEN2);
+ }
+
+
+ void UART2_Send(uint8 data)
+ {
+	 while(!READ_BIT(UCSR2A,UDRE2));
+	 UDR2=data;
+ }
+
+ uint8 UART2_ReceiveData(void)
+ {
+	 while(!READ_BIT(UCSR2A,RXC2));
+	 return UDR2;
+ }
+
+
+ uint8 UART2_ReceivePerodic(uint8*pdata)
+ {
+	 if(READ_BIT(UCSR2A,RXC2))
+	 {
+		 *pdata=UDR2;
+		 return 1;
+	 }
+	 return 0;
+ }
+
+
+ void UART2_SendNoBlock(uint8 data)
+ {
+	 UDR2=data;
+ }
+
+ uint8 UART2_ReceiveNoBlock(void)
+ {
+	 return UDR2;
+ }
+
+
+ void UART2_RX_InterruptEnable(void)
+ {
+	 SET_BIT(UCSR2B,RXCIE2);
+ }
+
+ void UART2_RX_InterruptDisable(void)
+ {
+	 CLEAR_BIT(UCSR2B,RXCIE2);
+ }
+
+ void UART2_TX_InterruptEnable(void)
+ {
+	 SET_BIT(UCSR2B,TXCIE2);
+ }
+
+ void UART2_TX_InterruptDisable(void)
+ {
+	 CLEAR_BIT(UCSR2B,TXCIE2);
+ }
+ //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+ /*******************************************UART3**************************************************************/
+ void UART3_init(void)
+ {
+	 /*baud ratio*/
+	 uint16_t ubrr = (F_CPU / (16 * BAUDRATE)) - 1;
+	 UBRR3H = (uint8_t)(ubrr >> 8);
+	 UBRR3L = (uint8_t)ubrr; //9600 clock MHz
+	 /*  8 bit data asynchronous no parity  2 stop bit*/
+	 SET_BIT(UCSR3C,USBS3);         //set 0 THIS LINE FOR 1 STOP BIT (clear bit)
+	 UCSR3C |= (1 << UCSZ31) | (1 << UCSZ30);          //sets size (number of data bits in the frame)
+	 //SET_BIT(UCS0C,UPM0);        //sets up parity mode
+	 /*Enable*/
+	 SET_BIT(UCSR3B,RXEN3);
+	 SET_BIT(UCSR3B,TXEN3);
+ }
+
+
+ void UART3_Send(uint8 data)
+ {
+	 while(!READ_BIT(UCSR3A,UDRE3));
+	 UDR3=data;
+ }
+
+ uint8 UART3_ReceiveData(void)
+ {
+	 while(!READ_BIT(UCSR3A,RXC3));
+	 return UDR3;
+ }
+
+
+ uint8 UART3_ReceivePerodic(uint8*pdata)
+ {
+	 if(READ_BIT(UCSR3A,RXC3))
+	 {
+		 *pdata=UDR3;
+		 return 1;
+	 }
+	 return 0;
+ }
+
+
+ void UART3_SendNoBlock(uint8 data)
+ {
+	 UDR3=data;
+ }
+
+ uint8 UART3_ReceiveNoBlock(void)
+ {
+	 return UDR3;
+ }
+
+
+ void UART3_RX_InterruptEnable(void)
+ {
+	 SET_BIT(UCSR3B,RXCIE3);
+ }
+
+ void UART3_RX_InterruptDisable(void)
+ {
+	 CLEAR_BIT(UCSR3B,RXCIE3);
+ }
+
+ void UART3_TX_InterruptEnable(void)
+ {
+	 SET_BIT(UCSR3B,TXCIE3);
+ }
+
+ void UART3_TX_InterruptDisable(void)
+ {
+	 CLEAR_BIT(UCSR3B,TXCIE3);
+ }
+ //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////x	

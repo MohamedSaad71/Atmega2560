@@ -34,8 +34,6 @@
 /* Check if a specific bit is cleared in any register and return true if yes */
 #define BIT_IS_CLEAR(REG,BIT) ( !(REG & (1<<BIT)) )
 
-#define READ_Bit(Reg,Bit) ((Reg>>Bit)&1)
-
-
+#define READ_BIT(REG, BIT) (((REG) >> (BIT)) & 0x01)
 
 #endif

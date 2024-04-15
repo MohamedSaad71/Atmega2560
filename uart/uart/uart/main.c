@@ -11,15 +11,20 @@
 
 #define Baud_Rate 9600
 
+#define MC2_READY 0x10
+
 
 int main(void)
 {
-    UART0_init(Baud_Rate);
-	
+    UART0_init();
 	uint8 data = 'b';
+	//while(UART0_ReceiveData() != MC2_READY){}
+	
+	
     while (1) 
     {
-		UART0_sendByte(data);
+		UART0_sendString("Hello");
+		
     }
 }
 

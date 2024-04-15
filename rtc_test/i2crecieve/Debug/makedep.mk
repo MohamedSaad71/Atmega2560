@@ -12,3 +12,5 @@ RTC1307.c
 
 twi.c
 
+uart.c
+

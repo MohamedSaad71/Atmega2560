@@ -8,6 +8,8 @@
 
 #ifndef UART_H_
 #define UART_H_
+
+#define F_CPU 16000000UL
  #include "MemMap.h"
  #include "common_macros.h"
  #include "std_types.h"

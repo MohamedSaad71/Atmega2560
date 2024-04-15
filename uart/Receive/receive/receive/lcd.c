@@ -51,10 +51,11 @@ void LCD_sendCommand(uint8 command)
 	GPIO_writePin(LCD_RS_PORT_ID,LCD_RS_PIN_ID,LOGIC_LOW); /* Instruction Mode RS=0 */
 	GPIO_writePin(LCD_RW_PORT_ID,LCD_RW_PIN_ID,LOGIC_LOW); /* write data to LCD so RW=0 */
 	_delay_ms(1); /* delay for processing Tas = 50ns */
-	GPIO_writePin(LCD_E_PORT_ID,LCD_E_PIN_ID,LOGIC_HIGH); /* Enable LCD E=1 */
-	_delay_ms(1); /* delay for processing Tpw - Tdws = 190ns */
 	GPIO_writePort(LCD_DATA_PORT_ID,command); /* out the required command to the data bus D0 --> D7 */
 	_delay_ms(1); /* delay for processing Tdsw = 100ns */
+	GPIO_writePin(LCD_E_PORT_ID,LCD_E_PIN_ID,LOGIC_HIGH); /* Enable LCD E=1 */
+	_delay_ms(1); /* delay for processing Tpw - Tdws = 190ns */
+	
 	GPIO_writePin(LCD_E_PORT_ID,LCD_E_PIN_ID,LOGIC_LOW); /* Disable LCD E=0 */
 	_delay_ms(1); /* delay for processing Th = 13ns */
 }
@@ -115,10 +116,10 @@ void LCD_moveCursor(uint8 row,uint8 col)
 			lcd_memory_address=col+0x40;
 				break;
 		case 2:
-			lcd_memory_address=col+0x10;
+			lcd_memory_address=col+0x14;
 				break;
 		case 3:
-			lcd_memory_address=col+0x50;
+			lcd_memory_address=col+0x54;
 				break;
 	}					
 	/* Move the LCD cursor to this specific address */

@@ -1,4 +1,5 @@
-main.d main.o: .././main.c \
+main.d main.o: .././main.c .././UART.h .././MemMap.h .././std_types.h \
+ .././common_macros.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\io.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\sfr_defs.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\inttypes.h \
@@ -18,10 +19,17 @@ main.d main.o: .././main.c \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\util\delay.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\util\delay_basic.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\math.h \
- .././twi.h .././MemMap.h .././common_macros.h .././std_types.h \
- .././micros_config.h \
+ .././twi.h .././micros_config.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\interrupt.h \
- .././GPIO.h .././lcd.h .././RTC1307.h
+ .././RTC1307.h .././lcd.h
+
+.././UART.h:
+
+.././MemMap.h:
+
+.././std_types.h:
+
+.././common_macros.h:
 
 c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\io.h:
 
@@ -63,18 +71,10 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\
 
 .././twi.h:
 
-.././MemMap.h:
-
-.././common_macros.h:
-
-.././std_types.h:
-
 .././micros_config.h:
 
 c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\interrupt.h:
 
-.././GPIO.h:
+.././RTC1307.h:
 
 .././lcd.h:
-
-.././RTC1307.h:

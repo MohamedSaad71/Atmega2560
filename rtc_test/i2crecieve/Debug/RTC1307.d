@@ -15,7 +15,7 @@ RTC1307.d RTC1307.o: .././RTC1307.c .././RTC1307.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\lib\gcc\avr\5.4.0\include\stddef.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\string.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\lib\gcc\avr\5.4.0\include\stdbool.h \
- .././twi.h .././MemMap.h .././common_macros.h .././std_types.h \
+ .././twi.h .././MemMap.h .././std_types.h .././common_macros.h \
  .././micros_config.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\util\delay.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\util\delay_basic.h \
@@ -60,9 +60,9 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\lib\
 
 .././MemMap.h:
 
-.././common_macros.h:
-
 .././std_types.h:
+
+.././common_macros.h:
 
 .././micros_config.h:
 

@@ -1,11 +1,14 @@
  
 #include "UART.h"
+#include "lcd.h"
+#include <util/delay.h>
 #define BAUDRATE 9600  
-#define F_CPU 8000000UL
+
 
 /*******************************************UART0**************************************************************/ 
 void UART0_init(void)
  {
+	 UCSR0A = (1<<U2X0);
 	/*baud ratio*/
 	uint16_t ubrr = (F_CPU / (16 * BAUDRATE)) - 1;
 	UBRR0H = (uint8_t)(ubrr >> 8);
@@ -39,21 +42,24 @@ void UART0_sendString(const uint8 *Str)
 	{
 		UART0_Send(Str[i]);
 		i++;
+		_delay_ms(500);
 	}
 }
  
  void UART0_receiveString(uint8 *Str)
  {
 	 uint8 i=0;
-	 
+	
 	 Str[i]=UART0_ReceiveData();
-	 
-	 while(Str[i] != 'G')
+	 while(Str[i] != '\0')
 	 {
 		i++;
-		Str[i]=UART0_ReceiveData(); 
+ 		Str[i]=UART0_ReceiveData(); 	
 	 }
+	  
 	 Str[i]='\0';
+	 
+	  
  }
 
 
@@ -61,7 +67,7 @@ void UART0_sendString(const uint8 *Str)
 
 uint8 UART0_ReceivePerodic(uint8*pdata)
  {
-   if(READ_Bit(UCSR0A,RXC0))
+   if(READ_BIT(UCSR0A,RXC0))
 	  {
 		  *pdata=UDR0;
 		  return 1;
@@ -121,20 +127,20 @@ void UART0_TX_InterruptDisable(void)
  
  void UART1_Send(uint8 data)
  {
-	 while(!READ_Bit(UCSR1A,UDRE1));
+	 while(!READ_BIT(UCSR1A,UDRE1));
 	 UDR1=data;
  }
  
  uint8 UART1_ReceiveData(void)
  {
-	 while(!READ_Bit(UCSR1A,RXC1));
+	 while(!READ_BIT(UCSR1A,RXC1));
 	 return UDR1;
  }
 
 
  uint8 UART1_ReceivePerodic(uint8*pdata)
  {
-	 if(READ_Bit(UCSR1A,RXC1))
+	 if(READ_BIT(UCSR1A,RXC1))
 	 {
 		 *pdata=UDR1;
 		 return 1;
@@ -194,20 +200,20 @@ void UART2_init(void)
 
 void UART2_Send(uint8 data)
 {
-	while(!READ_Bit(UCSR2A,UDRE2));
+	while(!READ_BIT(UCSR2A,UDRE2));
 	UDR2=data;
 }
 
 uint8 UART2_ReceiveData(void)
 {
-	while(!READ_Bit(UCSR2A,RXC2));
+	while(!READ_BIT(UCSR2A,RXC2));
 	return UDR2;
 }
 
 
 uint8 UART2_ReceivePerodic(uint8*pdata)
 {
-	if(READ_Bit(UCSR2A,RXC2))
+	if(READ_BIT(UCSR2A,RXC2))
 	{
 		*pdata=UDR2;
 		return 1;
@@ -267,20 +273,20 @@ void UART3_init(void)
 
 void UART3_Send(uint8 data)
 {
-	while(!READ_Bit(UCSR3A,UDRE3));
+	while(!READ_BIT(UCSR3A,UDRE3));
 	UDR3=data;
 }
 
 uint8 UART3_ReceiveData(void)
 {
-	while(!READ_Bit(UCSR3A,RXC3));
+	while(!READ_BIT(UCSR3A,RXC3));
 	return UDR3;
 }
 
 
 uint8 UART3_ReceivePerodic(uint8*pdata)
 {
-	if(READ_Bit(UCSR3A,RXC3))
+	if(READ_BIT(UCSR3A,RXC3))
 	{
 		*pdata=UDR3;
 		return 1;

@@ -41,7 +41,8 @@ C_SRCS +=  \
 ../lcd.c \
 ../main.c \
 ../RTC1307.c \
-../twi.c
+../twi.c \
+../uart.c
 
 
 PREPROCESSING_SRCS += 
@@ -55,28 +56,32 @@ GPIO.o \
 lcd.o \
 main.o \
 RTC1307.o \
-twi.o
+twi.o \
+uart.o
 
 OBJS_AS_ARGS +=  \
 GPIO.o \
 lcd.o \
 main.o \
 RTC1307.o \
-twi.o
+twi.o \
+uart.o
 
 C_DEPS +=  \
 GPIO.d \
 lcd.d \
 main.d \
 RTC1307.d \
-twi.d
+twi.d \
+uart.d
 
 C_DEPS_AS_ARGS +=  \
 GPIO.d \
 lcd.d \
 main.d \
 RTC1307.d \
-twi.d
+twi.d \
+uart.d
 
 OUTPUT_FILE_PATH +=rtcproject.elf
 
@@ -121,6 +126,13 @@ LINKER_SCRIPT_DEP+=
 	
 
 ./twi.o: .././twi.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 5.4.0
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\include"  -Og -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -mrelax -g2 -Wall -mmcu=atmega2560 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\gcc\dev\atmega2560" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
+./uart.o: .././uart.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler : 5.4.0
 	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\include"  -Og -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -mrelax -g2 -Wall -mmcu=atmega2560 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\gcc\dev\atmega2560" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
